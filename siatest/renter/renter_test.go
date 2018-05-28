@@ -744,3 +744,53 @@ func testRenterDownloadAfterRenew(t *testing.T, tg *siatest.TestGroup) {
 		t.Fatal(err)
 	}
 }
+
+// TestRedundancyReporting verifies that redundancy reporting is accurate if
+// contracts become offline.
+func TestRedundancyReporting(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+	}
+
+	// Create a group for testing.
+	groupParams := siatest.GroupParams{
+		Hosts:   2,
+		Renters: 1,
+		Miners:  1,
+	}
+	tg, err := siatest.NewGroupFromTemplate(groupParams)
+	if err != nil {
+		t.Fatal("Failed to create group: ", err)
+	}
+	defer func() {
+		if err := tg.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	// Upload a file.
+	dataPieces := uint64(1)
+	parityPieces := uint64(len(tg.Hosts()) - 1)
+
+	renter := tg.Renters()[0]
+	_, rf, err := renter.UploadNewFileBlocking(100, dataPieces, parityPieces)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// TODO Stop one of the hosts
+
+	// Redundancy should decrease.
+	expectedRedundancy := float64(dataPieces+parityPieces-1) / float64(dataPieces)
+	if err := renter.WaitForDecreasingRedundancy(rf, expectedRedundancy); err != nil {
+		t.Fatal("Redundancy isn't decreasing", err)
+	}
+
+	// TODO Start the host
+
+	// Redundancy should go back to normal.
+	expectedRedundancy = float64(dataPieces+parityPieces) / float64(dataPieces)
+	if err := renter.WaitForUploadRedundancy(rf, expectedRedundancy); err != nil {
+		t.Fatal("Redundancy is not increasing")
+	}
+}
