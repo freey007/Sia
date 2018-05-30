@@ -467,11 +467,6 @@ func NewCustomRenter(g modules.Gateway, cs modules.ConsensusSet, tpool modules.T
 	r.mu.Unlock(id)
 
 	// Set RenterSettings to persisted data
-	if settingsMetadata.Version != persistVersion {
-		r.persist.MaxDownloadSpeed = DefaultMaxDownloadSpeed
-		r.persist.MaxUploadSpeed = DefaultMaxUploadSpeed
-		r.persist.StreamCacheSize = DefaultStreamCacheSize
-	}
 	settings := r.Settings()
 	settings.MaxDownloadSpeed = r.persist.MaxDownloadSpeed
 	settings.MaxUploadSpeed = r.persist.MaxUploadSpeed

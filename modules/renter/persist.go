@@ -249,7 +249,7 @@ func (r *Renter) load() error {
 		Tracking: make(map[string]trackedFile),
 	}
 	err = persist.LoadJSON(settingsMetadata, &r.persist, filepath.Join(r.persistDir, PersistFilename))
-	if err != nil {
+	if err == persist.ErrBadVersion {
 		err = r.updatePersistVersionFrom040To133()
 		if err != nil {
 			return err
@@ -257,6 +257,8 @@ func (r *Renter) load() error {
 		if err = r.load(); err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
 
 	return nil
@@ -469,6 +471,11 @@ func (r *Renter) updatePersistVersionFrom040To133() error {
 	if err != nil {
 		return err
 	}
+
+	// Set updated version number and dafault values
 	metadata.Version = persistVersion133
+	r.persist.MaxDownloadSpeed = DefaultMaxDownloadSpeed
+	r.persist.MaxUploadSpeed = DefaultMaxUploadSpeed
+	r.persist.StreamCacheSize = DefaultStreamCacheSize
 	return persist.SaveJSON(metadata, r.persist, filepath.Join(r.persistDir, PersistFilename))
 }

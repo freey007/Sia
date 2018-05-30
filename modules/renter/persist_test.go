@@ -341,4 +341,14 @@ func TestUpgradeLegacyPersistFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if r.persist.MaxDownloadSpeed != DefaultMaxDownloadSpeed {
+		t.Fatalf("Max Download Speed not set to default, set to %v should be %v", r.persist.MaxDownloadSpeed, DefaultMaxDownloadSpeed)
+	}
+	if r.persist.MaxUploadSpeed != DefaultMaxUploadSpeed {
+		t.Fatalf("Max Upload Speed not set to default, set to %v should be %v", r.persist.MaxUploadSpeed, DefaultMaxUploadSpeed)
+	}
+	if r.persist.StreamCacheSize != DefaultStreamCacheSize {
+		t.Fatalf("Stream Cache Size not set to default, set to %v should be %v", r.persist.StreamCacheSize, DefaultStreamCacheSize)
+	}
 }
