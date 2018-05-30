@@ -317,38 +317,3 @@ func TestSiafileCompatibility(t *testing.T) {
 		t.Fatal("nickname not loaded properly:", names)
 	}
 }
-
-// TestUpgradeLegacyPersistFile
-func TestUpgradeLegacyPersistFile(t *testing.T) {
-	// Create renter
-	r := &Renter{}
-	r.persistDir = filepath.Join("..", "..", "persist", "testdata")
-
-	// Set persist version to legacy version and save persist file
-	settingsMetadata.Version = persistVersion040
-	data := struct {
-		Tracking  map[string]string
-		Repairing map[string]string
-	}{}
-	persist.SaveJSON(settingsMetadata, data, filepath.Join(r.persistDir, PersistFilename))
-
-	// Confirm loading of legacy persist file
-	r.persist = persistence{
-		Tracking: make(map[string]trackedFile),
-	}
-	settingsMetadata.Version = persistVersion
-	err := r.load()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if r.persist.MaxDownloadSpeed != DefaultMaxDownloadSpeed {
-		t.Fatalf("Max Download Speed not set to default, set to %v should be %v", r.persist.MaxDownloadSpeed, DefaultMaxDownloadSpeed)
-	}
-	if r.persist.MaxUploadSpeed != DefaultMaxUploadSpeed {
-		t.Fatalf("Max Upload Speed not set to default, set to %v should be %v", r.persist.MaxUploadSpeed, DefaultMaxUploadSpeed)
-	}
-	if r.persist.StreamCacheSize != DefaultStreamCacheSize {
-		t.Fatalf("Stream Cache Size not set to default, set to %v should be %v", r.persist.StreamCacheSize, DefaultStreamCacheSize)
-	}
-}
